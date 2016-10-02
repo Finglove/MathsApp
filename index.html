@@ -1,0 +1,77 @@
+<head>
+	<script type="text/javascript" src="./Framework.js">
+</script>
+	<script type="text/javascript" src="./Statements.js">
+</script>
+	<script type="text/javascript" src="./Expressions.js">
+</script>
+
+<script type="text/javascript">
+rawInputClicked = function(){
+	output("--");
+	var input = document.getElementById("rawInputTextBox").value;
+	var expr = Expressions.receive(input);
+	output("Raw: "+ Expressions.stringify(expr));
+	var expandedExpr =Expressions.expand(expr);
+	output("Expanded: "+ Expressions.stringify(expandedExpr));
+	var groupedExpr = Expressions.groupLikeTerms(expandedExpr,Expressions.receive("{X}"));
+	output("Grouped by X: "+Expressions.stringify(groupedExpr));
+	var expandedAgain = Expressions.expand(groupedExpr);
+	output("Then expanded again: "+Expressions.stringify(expandedAgain));
+	console.log(expandedExpr);
+	/*
+	console.log(expr);
+	console.log(Expressions.simplify(expr));
+	var eval = {X: Expressions.receive("5{Y}")};
+	var evald = Expressions.evaluate(expr,eval);
+	console.log(evald);
+	output("Evaluated at X=5Y: " + Expressions.stringify(evald));
+	output("Simplified: " + Expressions.stringify(Expressions.simplify(evald)));
+	*/
+}
+
+atStart = function(){
+	var testResults = quickTests();
+	if(testResults.length > 0){
+		console.log("ERROR! Tests gave incorrect answers:");
+		console.log(testResults);
+	}
+}
+
+quickTests = function(){
+	var tests = [];
+	var errors = [];
+	tests.push(["{X}^0","1"]);
+	tests.push(["(((((4*4)))))","16"]);
+	tests.push(["2^3^2","512"]);
+	tests.push(["(1+2{X})^2","4*({X})^(1)+4*({X})^(2)+1"]);
+	var i = 0;
+	for( i = 0; i < tests.length; i++){
+		var input = Expressions.receive(tests[i][0])
+		var expanded = Expressions.expand(input);
+		var groupedByX = Expressions.groupLikeTerms(expanded,Expressions.receive("{X}"));
+		var expandedAgain = Expressions.expand(groupedByX);
+		var res = Expressions.stringify(expandedAgain);
+		if(res !== tests[i][1]){
+			errors.push([tests[i][0],tests[i][1],res]);
+		}
+	}
+	return errors;
+}
+
+output = function(message){
+	var d = document.getElementById("output");
+	d.innerHTML = message + "<br>"+d.innerHTML;
+	console.log(message)
+}
+</script>
+
+</head>
+<body onload="atStart()">
+	<div id="rawInput">
+		<input type="text" id="rawInputTextBox" />
+		<input type="button" onclick="rawInputClicked()" value="input"/>
+	</div>
+	<div id="output">
+		</div>
+</body>
